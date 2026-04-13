@@ -48,7 +48,7 @@ def detect_faces(img: torch.Tensor) -> List[List[float]]:
     # Extract (topleft_y, bottomright_x, bottomright_y, topleft_x) format 
     for face in face_locations:
         topleft_y, bottomright_x, bottomright_y, topleft_x = face
-        # Convert to [topleft_x, topleft_y, box_width, box_height] format
+        # Convert to [topleft_x, topleft_y, box_width, box_height] format and float
         topleft_x = float(topleft_x)
         topleft_y = float(topleft_y)
         box_width = float(bottomright_x - topleft_x)
@@ -82,6 +82,16 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
     cluster_results: List[List[str]] = [[] for _ in range(K)] # Please make sure your output follows this data format.
         
     ##### YOUR IMPLEMENTATION STARTS HERE #####
+    
+    # Iterate through each img in imgs
+    img_names = list(imgs.keys())
+    for name in img_names:
+        img_array = imgs[name]
+        # Convert img to numpy array with (H, W, C) dimensions for face_recognition input
+        img = img_array.permute(1, 2, 0).numpy()
+        # Find face locations
+        face_locations = face_recognition.face_locations(img)
+        
     
     return cluster_results
 
