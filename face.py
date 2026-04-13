@@ -49,8 +49,10 @@ def detect_faces(img: torch.Tensor) -> List[List[float]]:
     for face in face_locations:
         topleft_y, bottomright_x, bottomright_y, topleft_x = face
         # Convert to [topleft_x, topleft_y, box_width, box_height] format
-        box_width = bottomright_x - topleft_x
-        box_height = bottomright_y - topleft_y
+        topleft_x = float(topleft_x)
+        topleft_y = float(topleft_y)
+        box_width = float(bottomright_x - topleft_x)
+        box_height = float(bottomright_y - topleft_y)
         # Append bounding boxes to detection_results
         detection_results.append([topleft_x, topleft_y, box_width, box_height])
 
