@@ -39,11 +39,20 @@ def detect_faces(img: torch.Tensor) -> List[List[float]]:
 
     ##### YOUR IMPLEMENTATION STARTS HERE #####
     
-    # Convert to numpy array with (H, W, C) dimensions for face_recognition input
+    # Convert img to numpy array with (H, W, C) dimensions for face_recognition input
     img_face = img.permute(1, 2, 0).numpy()
     # Find face locations
     face_locations = face_recognition.face_locations(img_face)
-    print(face_locations)
+    # Convert back to torch tensors
+    torch.tensor(face_locations)
+    # Extract (topleft_y, bottomright_x, bottomright_y, topleft_x) format 
+    for face in face_locations:
+        topleft_y, bottomright_x, bottomright_y, topleft_x = face
+        # Convert to [topleft_x, topleft_y, box_width, box_height] format
+        box_width = bottomright_x - topleft_x
+        box_height = bottomright_y - topleft_y
+        # Append bounding boxes to detection_results
+        detection_results.append([topleft_x, topleft_y, box_width, box_height])
 
     return detection_results
 
