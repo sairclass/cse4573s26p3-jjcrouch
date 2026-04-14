@@ -85,6 +85,8 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
     
     ### Extract a 128-dimensional vector for each cropped face ###
     
+    # Initialized faces list
+    faces = []
     # Iterate through each img in imgs
     img_names = list(imgs.keys())
     for name in img_names:
@@ -94,8 +96,12 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
         # Find face locations
         boxes = face_recognition.face_locations(img)
         # Extract face encoding (128-dimensional vector)
-        faces = face_recognition.face_encodings(img, boxes)
-        
+        face = face_recognition.face_encodings(img, boxes)
+        # Append face to faces list as torch tensor
+        faces.append(torch.tensor(face))
+    
+    ### Build k-means clustering algorithm ###
+    
     
     
     return cluster_results
