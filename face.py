@@ -125,7 +125,10 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
         for cluster in range(K):
             cluster_points = F[labels == cluster]
             centroids[cluster] = cluster_points.mean(dim=0)
-        print(centroids)
+    
+    # Build final cluster results list
+    for i, label in enumerate(labels.tolist()):
+        cluster_results[label].append(img_names[i])
     
     return cluster_results
 
