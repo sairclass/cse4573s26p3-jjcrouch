@@ -108,13 +108,20 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
     N = F.shape[0]
     indices = torch.randperm(N)[:K]
     centroids = F[indices]
+    # Initialize closest distance labels
+    labels = torch.zeros(N)
     # Start K-means iterations
     for _ in range(100):
         # Compute distances between centroids and surrounding points
         distances = torch.norm(F.unsqueeze(1) - centroids.unsqueeze(0), dim=2)
         # Assign each point to the closest centroid
-        labels = torch.argmin(distances, dim=1)
-    
+        new_labels = torch.argmin(distances, dim=1)
+        # Check if labels changed this iteration
+        if torch.equal(labels, new_labels):
+            break
+        # If labels changed, then assign new labels as labels
+        labels = new_labels
+        print(labels)
     
     return cluster_results
 
