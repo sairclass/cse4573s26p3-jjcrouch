@@ -83,6 +83,8 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
         
     ##### YOUR IMPLEMENTATION STARTS HERE #####
     
+    ### Extract a 128-dimensional vector for each cropped face ###
+    
     # Iterate through each img in imgs
     img_names = list(imgs.keys())
     for name in img_names:
@@ -90,8 +92,11 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
         # Convert img to numpy array with (H, W, C) dimensions for face_recognition input
         img = img_array.permute(1, 2, 0).numpy()
         # Find face locations
-        face_locations = face_recognition.face_locations(img)
+        boxes = face_recognition.face_locations(img)
+        # Extract face encoding (128-dimensional vector)
+        faces = face_recognition.face_encodings(img, boxes)
         
+    
     
     return cluster_results
 
