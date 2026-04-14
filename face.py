@@ -44,7 +44,7 @@ def detect_faces(img: torch.Tensor) -> List[List[float]]:
     # Find face locations
     face_locations = face_recognition.face_locations(img_face)
     # Convert back to torch tensors
-    torch.tensor(face_locations)
+    face_locations = torch.tensor(face_locations)
     # Extract (topleft_y, bottomright_x, bottomright_y, topleft_x) format 
     for face in face_locations:
         topleft_y, bottomright_x, bottomright_y, topleft_x = face
@@ -57,8 +57,6 @@ def detect_faces(img: torch.Tensor) -> List[List[float]]:
         detection_results.append([topleft_x, topleft_y, box_width, box_height])
 
     return detection_results
-
-
 
 def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
     """
@@ -104,34 +102,51 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
     
     # Stack list face tensors into a 2D array
     F = torch.stack(faces)
-    # Randomly select K points as starting cluster centroids
     N = F.shape[0]
-    indices = torch.randperm(N)[:K]
-    centroids = F[indices]
-    # Initialize closest distance labels
-    labels = torch.zeros(N)
-    # Start K-means iterations
-    for _ in range(100):
-        # Compute distances between centroids and surrounding points
-        distances = torch.norm(F.unsqueeze(1) - centroids.unsqueeze(0), dim=2)
-        # Assign each point to the closest centroid
-        new_labels = torch.argmin(distances, dim=1)
-        # Check if labels changed this iteration
-        if torch.equal(labels, new_labels):
-            break
-        # If labels changed, then assign new labels as labels
-        labels = new_labels
-        # Update cluster centroids
-        for cluster in range(K):
-            cluster_points = F[labels == cluster]
-            centroids[cluster] = cluster_points.mean(dim=0)
+    # Initialize variables for iterations
+    best_ssd = float('inf')
+    best_labels = None
     
+    # Run K-means 10 times to avoid bad random initializations
+    for run in range(10):
+        # Randomly select K points as starting cluster centroids
+        indices = torch.randperm(N)[:K]
+        centroids = F[indices].clone() # Clone to avoid modifying the original F
+        # Initialize closest distance labels
+        labels = torch.zeros(N)
+        
+        # Start K-means iterations
+        for _ in range(100):
+            # Compute distances between centroids and surrounding points
+            distances = torch.norm(F.unsqueeze(1) - centroids.unsqueeze(0), dim=2)
+            # Assign each point to the closest centroid
+            new_labels = torch.argmin(distances, dim=1)
+            # Check if labels changed this iteration
+            if torch.equal(labels, new_labels):
+                break
+            # If labels changed, then assign new labels as labels
+            labels = new_labels
+            # Update cluster centroids
+            for cluster in range(K):
+                cluster_points = F[labels == cluster]
+                # Only update if the cluster isn't empty to prevent NaN errors
+                if len(cluster_points) > 0:
+                    centroids[cluster] = cluster_points.mean(dim=0)
+        # Calculate sum of squared distances for this complete run
+        final_distances = torch.norm(F.unsqueeze(1) - centroids.unsqueeze(0), dim=2)
+        min_distances, _ = torch.min(final_distances, dim=1)
+        ssd = torch.sum(min_distances ** 2).item()
+        # If this run is better than previous runs, save it
+        if ssd < best_ssd:
+            best_ssd = ssd
+            best_labels = labels
+    # Overwrite labels with the best performing run
+    labels = best_labels
     # Build final cluster results list
     for i, label in enumerate(labels.tolist()):
         cluster_results[label].append(img_names[i])
     
     return cluster_results
-
 
 '''
 If your implementation requires multiple functions. Please implement all the functions you design under here.
