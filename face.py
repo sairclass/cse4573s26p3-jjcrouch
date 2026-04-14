@@ -100,14 +100,20 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
         # Append face to faces list as torch tensor
         faces.append(torch.tensor(face))
     
-    ### Build k-means clustering algorithm ###
+    ### Build K-means clustering algorithm ###
     
     # Stack list face tensors into a 2D array
     F = torch.stack(faces)
     # Randomly select K points as starting cluster centroids
     N = F.shape[0]
     indices = torch.randperm(N)[:K]
-    
+    centroids = F[indices]
+    # Start K-means iterations
+    for _ in range(100):
+        # Compute distances between centroids and surrounding points
+        distances = torch.cdist(F, centroids)
+        # Assign each point to the closest centroid
+        labels = torch.argmin(distances, dim=1)
     
     
     return cluster_results
