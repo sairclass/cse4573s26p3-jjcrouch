@@ -98,7 +98,7 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
         # Extract face encoding (128-dimensional vector)
         face = face_recognition.face_encodings(img, boxes)
         # Append face to faces list as torch tensor
-        faces.append(torch.tensor(face))
+        faces.append(torch.tensor(face[0]))
     
     ### Build K-means clustering algorithm ###
     
