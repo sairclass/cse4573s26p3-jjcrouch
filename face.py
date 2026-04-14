@@ -102,6 +102,12 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
     
     ### Build k-means clustering algorithm ###
     
+    # Stack list face tensors into a 2D array
+    F = torch.stack(faces)
+    # Randomly select K points as starting cluster centroids
+    N = F.shape[0]
+    indices = torch.randperm(N)[:K]
+    
     
     
     return cluster_results
