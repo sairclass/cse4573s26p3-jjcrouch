@@ -121,7 +121,11 @@ def cluster_faces(imgs: Dict[str, torch.Tensor], K: int) -> List[List[str]]:
             break
         # If labels changed, then assign new labels as labels
         labels = new_labels
-        print(labels)
+        # Update cluster centroids
+        for cluster in range(K):
+            cluster_points = F[labels == cluster]
+            centroids[cluster] = cluster_points.mean(dim=0)
+        print(centroids)
     
     return cluster_results
 
